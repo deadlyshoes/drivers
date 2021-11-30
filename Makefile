@@ -4,4 +4,4 @@ default:
 	$(MAKE) -C $(KDIR) M=$$PWD
 
 clean:
-	rm aloop.o aloop.ko aloop.mod* .aloop* Module* modules* .Module* .modules*
+	rm aloop*.o aloop*.ko aloop*.mod* .aloop* Module* modules* .Module* .modules*
