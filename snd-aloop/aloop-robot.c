@@ -56,6 +56,11 @@ MODULE_PARM_DESC(pcm_notify, "Break capture when PCM format/rate/channels change
 module_param_array(timer_source, charp, NULL, 0444);
 MODULE_PARM_DESC(timer_source, "Sound card name or number and device/subdevice number of timer to be used. Empty string for jiffies timer [default].");
 
+static int efeito = 0;
+
+module_param(efeito, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+MODULE_PARM_DESC(efeito, "Número do efeito");
+
 #define NO_PITCH 100000
 
 #define CABLE_VALID_PLAYBACK	BIT(SNDRV_PCM_STREAM_PLAYBACK)
@@ -63,6 +68,15 @@ MODULE_PARM_DESC(timer_source, "Sound card name or number and device/subdevice n
 #define CABLE_VALID_BOTH	(CABLE_VALID_PLAYBACK | CABLE_VALID_CAPTURE)
 
 #define MAX_WINDOW_SIZE 64
+
+long long cos_alien[64] = {1000000, 997463, 989867, 977250, 959675, 937232, 910035, 878221, 841953,
+801413, 756808, 708364, 656327, 600961, 542546, 481379, 417770, 352041,
+284527, 215570, 145519, 74730, 3561, -67624, -138467, -208608, -277691,
+-345365, -411287, -475122, -536548, -595252, -650936, -703318, -752133, -797132,
+-838088, -874792, -907059, -934724, -957648, -975714, -988830, -996931, -999974,
+-997945, -990853, -978736, -961653, -939692, -912965, -881606, -845775, -805654,
+-761445, -713375, -661685, -606639, -548516, -487610, -424231, -358700, -291349,
+-222521 };
 
 const long long cos_test[12][64] = {{1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,
 1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,1000000,
@@ -804,8 +818,22 @@ static void copy_play_buf(struct loopback_pcm *play,
 		 			input_buffer[i] = src[src_off + i];
 				}
 		 	}
-		 	DFT(input_buffer, 64);
-		 	iDFT(dst + dst_off, 64);
+
+			if (efeito == 1) {
+		 		DFT(input_buffer, 64);
+		 		iDFT(dst + dst_off, 64);
+			} else if (efeito == 2) {
+				for (i = 0; i < 64; i++) {
+					long long sample = ((long long)input_buffer[2 * i + 1] << 8) + (long long)input_buffer[2 * i];
+					sample *= cos_alien[i];
+					sample /= 1000000;
+
+					dst[dst_off + 2 * i] = (char)(sample & 255);
+					dst[dst_off + 2 * i + 1] = (char)(sample >> 8);
+				}
+			} else {
+				memcpy(dst + dst_off, input_buffer, 128);
+			}
 		 	dst_off += 128;
 		 	src_off += 128;
 		 	remaining -= 128;
