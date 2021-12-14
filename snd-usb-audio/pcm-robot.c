@@ -1404,6 +1404,15 @@ static void retire_capture_urb(struct snd_usb_substream *subs,
 				if (efeito == 1) {
 					DFT(input_buffer, 64);
 					iDFT(output_buffer, 64);
+				} else if (efeito == 2) {
+					for (k = 0; k < 64; k++) {
+						long long sample = ((long long)input_buffer[2 * k + 1] << 8) + (long long)input_buffer[2 * k];
+						sample *= cos_alien[k];
+						sample /= 1000000;
+
+						output_buffer[2 * k] = (char)(sample & 255);
+						output_buffer[2 * k + 1] = (char)(sample >> 8);
+					}
 				}
 
 				spin_lock_irqsave(&subs->lock, flags);
@@ -1449,12 +1458,20 @@ static void retire_capture_urb(struct snd_usb_substream *subs,
 		for (j = remaining; j < 128; j++)
 			input_buffer[j] = tmp_buffer[j - remaining];
 
+		for (j = 0; j < 128; j++)
+			output_buffer[j] = input_buffer[j];
+
 		if (efeito == 1) {
 			DFT(input_buffer, 64);
 			iDFT(output_buffer, 64);
-		} else {
-			for (j = 0; j < 128; j++) {
-				output_buffer[j] = input_buffer[j];
+		} else if (efeito == 2) {
+			for (j = 0; j < 64; j++) {
+				long long sample = ((long long)input_buffer[2 * j + 1] << 8) + (long long)input_buffer[2 * j];
+				sample *= cos_alien[j];
+				sample /= 1000000;
+
+				output_buffer[2 * j] = (char)(sample & 255);
+				output_buffer[2 * j + 1] = (char)(sample >> 8);
 			}
 		}
 
