@@ -24,6 +24,7 @@ $ make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
 ```
 $ sudo insmod snd-aloop.ko
 ```
+Apresentação: https://youtu.be/xKIFDyzOZk8
 
 ### snd-usb-audio
 A modificação foi feita dentro da função `retire_capture_urb()` responsável pela cópia dos dados do áudio para a memória para
@@ -36,6 +37,7 @@ $ make -C /lib/modules/$(uname -r)/build M=$(pwd) modules
 ```
 $ sudo insmod snd-usb-audio.ko
 ```
+Apresentação: https://youtu.be/qJzWdj5Cjs4
 
 ### Parametrização
 Com um dos módulos acima carregados na máquina, para alternar entre modo de voz com efeito e voz normal. Basta executar o programa
