@@ -1424,14 +1424,19 @@ static void retire_capture_urb(struct snd_usb_substream *subs,
 		}
 		
 
-        for (j = 0; j < cp; j++){
+        for (j = 0; j < bytes; j++){
             input_buffer[input_pointer] = cp[j];
             input_pointer = (input_pointer + 1) % 128;
 
             if(input_pointer == 0){
-                DFT(input_buffer, MAX_WINDOW_SIZE);
-                iDFT(output_buffer, MAX_WINDOW_SIZE);
                 
+				if(efeito == 0){
+					
+				} else {
+					DFT(input_buffer, MAX_WINDOW_SIZE);
+                	iDFT(output_buffer, MAX_WINDOW_SIZE);
+				}
+				
                 /* update the current pointer */
                 spin_lock_irqsave(&subs->lock, flags);
                 
